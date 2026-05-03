@@ -3,182 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANIMA Q | Contemporary Italian</title>
-    <!-- p5.js Library for WebGL -->
+    <title>ANIMA Q | Contemporary Italian Kitchen</title>
+    <!-- Google Fonts inspired by 'Harmony' elegant typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- p5.js Library for WebGL Canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     
     <style>
-        /* Google Fonts matching the "Harmony" aesthetic */
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400&display=swap');
-
+        /* CSS Variables based on Harmony image */
         :root {
-            --bg-green: #14241A; /* Deep Forest Green */
-            --text-gold: #DCA849; /* Mustard/Gold */
-            --text-light: #F5EEDB; /* Creamy Off-White */
+            --primary-green: #1b3824; 
+            --accent-gold: #d4af37;
+            --bg-white: #fdfcf9;
+            --text-dark: #2c2c2c;
             --font-heading: 'Playfair Display', serif;
-            --font-body: 'Inter', sans-serif;
-            --q-glow: #FFB347; /* Neon Gold/Orange for the Q */
+            --font-body: 'Montserrat', sans-serif;
         }
 
+        /* Base Styles & Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            scroll-behavior: smooth;
         }
 
         body {
-            background-color: var(--bg-green);
-            color: var(--text-light);
             font-family: var(--font-body);
+            background-color: var(--bg-white);
+            color: var(--text-dark);
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            line-height: 1.6;
         }
 
-        /* --- WEBGL BACKGROUND --- */
-        #p5-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1; 
-            pointer-events: none; 
+        h1, h2, h3 {
+            font-family: var(--font-heading);
+            font-weight: 400;
         }
 
-        /* --- NAVIGATION & HAMBURGER MENU --- */
+        /* Navigation & Hamburger Menu */
         nav {
             position: fixed;
             top: 0;
             width: 100%;
-            padding: 2rem 5%;
+            padding: 20px 50px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            transition: background 0.3s ease;
+            background: rgba(253, 252, 249, 0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .logo {
             font-family: var(--font-heading);
             font-size: 2rem;
-            font-weight: 600;
-            letter-spacing: 4px;
-            color: var(--text-light);
+            letter-spacing: 2px;
+            color: var(--primary-green);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
 
-        /* The Neon Glowing Q */
         .glowing-q {
-            color: var(--q-glow);
-            text-shadow: 
-                0 0 5px rgba(255, 179, 71, 0.8),
-                0 0 15px rgba(255, 179, 71, 0.6),
-                0 0 30px rgba(255, 179, 71, 0.4);
+            color: var(--accent-gold);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 
+                         0 0 20px rgba(212, 175, 55, 0.4), 
+                         0 0 30px rgba(212, 175, 55, 0.2);
+            animation: pulse-glow 3s infinite alternate;
             font-style: italic;
         }
 
-        /* Hamburger Icon */
-        .menu-toggle {
+        @keyframes pulse-glow {
+            0% { text-shadow: 0 0 5px rgba(212, 175, 55, 0.5); }
+            100% { text-shadow: 0 0 15px rgba(212, 175, 55, 0.9), 0 0 25px rgba(212, 175, 55, 0.6); }
+        }
+
+        .hamburger {
             cursor: pointer;
-            z-index: 1001; /* Keep above overlay */
             display: flex;
             flex-direction: column;
             gap: 6px;
+            z-index: 1001;
         }
 
-        .menu-toggle span {
-            display: block;
+        .hamburger span {
             width: 30px;
             height: 2px;
-            background-color: var(--text-gold);
-            transition: all 0.3s ease;
+            background-color: var(--primary-green);
+            transition: 0.3s;
         }
 
-        .menu-toggle.active span:nth-child(1) {
-            transform: translateY(8px) rotate(45deg);
-            background-color: var(--text-light);
-        }
-        .menu-toggle.active span:nth-child(2) {
-            opacity: 0;
-        }
-        .menu-toggle.active span:nth-child(3) {
-            transform: translateY(-8px) rotate(-45deg);
-            background-color: var(--text-light);
-        }
-
-        /* Full Screen Menu Overlay */
-        .menu-overlay {
+        .nav-links {
             position: fixed;
             top: 0;
-            left: 0;
+            right: -100%;
             width: 100vw;
             height: 100vh;
-            background-color: rgba(20, 36, 26, 0.95);
-            backdrop-filter: blur(10px);
+            background-color: var(--primary-green);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            gap: 2rem;
+            transition: 0.5s ease;
             z-index: 999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
         }
 
-        .menu-overlay.active {
-            opacity: 1;
-            pointer-events: all;
+        .nav-links.active {
+            right: 0;
         }
 
-        .menu-overlay ul {
-            list-style: none;
-            text-align: center;
-        }
-
-        .menu-overlay li {
-            margin: 2rem 0;
-            transform: translateY(20px);
-            opacity: 0;
-            transition: all 0.5s ease;
-        }
-
-        .menu-overlay.active li {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        /* Staggered animation for menu items */
-        .menu-overlay.active li:nth-child(1) { transition-delay: 0.1s; }
-        .menu-overlay.active li:nth-child(2) { transition-delay: 0.2s; }
-        .menu-overlay.active li:nth-child(3) { transition-delay: 0.3s; }
-        .menu-overlay.active li:nth-child(4) { transition-delay: 0.4s; }
-
-        .menu-overlay a {
-            color: var(--text-light);
+        .nav-links a {
+            color: var(--accent-gold);
             text-decoration: none;
             font-family: var(--font-heading);
-            font-size: clamp(2rem, 5vw, 4rem);
-            transition: color 0.3s ease;
+            font-size: 2.5rem;
+            transition: color 0.3s;
         }
 
-        .menu-overlay a:hover {
-            color: var(--text-gold);
+        .nav-links a:hover {
+            color: var(--bg-white);
         }
 
-        /* --- HERO & SLIDESHOW --- */
-        .hero {
+        .hamburger.active span:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); background-color: var(--accent-gold); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); background-color: var(--accent-gold); }
+
+        /* Sections */
+        section {
+            min-height: 100vh;
+            padding: 100px 5vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Hero Slideshow Section */
+        #hero {
             position: relative;
-            height: 100vh;
-            width: 100%;
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
             overflow: hidden;
-            background: transparent;
         }
 
         .slideshow-container {
@@ -187,9 +158,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
-            mix-blend-mode: overlay; /* Blends images beautifully with the green WebGL background */
-            opacity: 0.4; /* Keeps the focus on the aesthetic and WebGL */
+            z-index: -1;
+            background-color: var(--primary-green);
         }
 
         .slide {
@@ -202,7 +172,7 @@
             opacity: 0;
             transition: opacity 2s ease-in-out, transform 8s ease-out;
             transform: scale(1.05);
-            filter: grayscale(30%) contrast(120%);
+            filter: brightness(0.4) contrast(1.1);
         }
 
         .slide.active {
@@ -211,148 +181,341 @@
         }
 
         .hero-content {
-            position: relative;
-            z-index: 10;
-            max-width: 900px;
+            text-align: center;
+            color: var(--bg-white);
+            z-index: 1;
             padding: 0 20px;
         }
 
-        .hero-title {
-            font-family: var(--font-heading);
-            font-size: clamp(3rem, 8vw, 7rem);
-            color: var(--text-gold);
-            line-height: 1;
+        .hero-content h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
             margin-bottom: 1rem;
-            letter-spacing: 2px;
+            letter-spacing: 5px;
             text-transform: uppercase;
         }
-
-        .hero-subtitle {
-            font-size: clamp(0.9rem, 2vw, 1.2rem);
-            font-weight: 300;
-            letter-spacing: 4px;
+        
+        .hero-content p {
+            font-size: 1.2rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            color: var(--text-light);
+            color: var(--accent-gold);
         }
 
-        /* --- CONTENT SECTION --- */
-        .content-section {
-            padding: 10rem 5%;
+        /* Content Sections Shared Styles */
+        .section-title {
+            text-align: center;
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: var(--primary-green);
+            margin-bottom: 3rem;
             position: relative;
-            z-index: 10;
         }
 
-        .grid-layout {
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 2px;
+            background: var(--accent-gold);
+            margin: 15px auto 0;
+        }
+
+        /* Menu Grid */
+        .menu-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        .text-block h2 {
-            font-family: var(--font-heading);
-            color: var(--text-gold);
-            font-size: clamp(2rem, 4vw, 3rem);
-            margin-bottom: 2rem;
+        .menu-item {
+            text-align: center;
+            padding: 2rem;
+            background: #fff;
+            border: 1px solid rgba(27, 56, 36, 0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
 
-        .text-block p {
-            font-size: 1.1rem;
-            line-height: 1.8;
+        .menu-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(27, 56, 36, 0.1);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .menu-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
             margin-bottom: 1.5rem;
-            color: rgba(245, 238, 219, 0.8); /* Dimmed cream */
+            filter: grayscale(30%);
+            transition: 0.5s ease;
+        }
+        
+        .menu-item:hover img {
+            filter: grayscale(0%);
         }
 
-        /* --- MOBILE RESPONSIVE --- */
-        @media (max-width: 768px) {
-            .grid-layout {
-                grid-template-columns: 1fr;
-            }
-            nav {
-                padding: 1.5rem 5%;
-            }
-            .logo {
-                font-size: 1.5rem;
-            }
+        .menu-item h3 {
+            font-size: 1.8rem;
+            color: var(--primary-green);
+            margin-bottom: 0.5rem;
         }
+
+        /* Interactive WebGL Art Section */
+        #art-section {
+            position: relative;
+            padding: 0;
+            min-height: 70vh;
+            background-color: var(--primary-green);
+            overflow: hidden;
+        }
+        
+        #p5-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .art-overlay {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: var(--bg-white);
+            pointer-events: none;
+            padding: 0 20px;
+        }
+        
+        .art-overlay h2 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+        }
+
+        /* Forms (Booking) */
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            background: #fff;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-bottom: 1px solid rgba(27, 56, 36, 0.3);
+            background: transparent;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+            color: var(--text-dark);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-bottom: 1px solid var(--accent-gold);
+        }
+
+        button {
+            padding: 15px 30px;
+            background-color: var(--primary-green);
+            color: var(--bg-white);
+            border: none;
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            margin-top: 1rem;
+            letter-spacing: 2px;
+        }
+
+        button:hover {
+            background-color: var(--accent-gold);
+            color: var(--primary-green);
+        }
+
+        /* About & Contact Styles */
+        .text-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .text-content p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: #4a4a4a;
+        }
+
+        .contact-info p {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary-green);
+            color: var(--bg-white);
+            text-align: center;
+            padding: 4rem 1rem;
+        }
+        
+        .footer-logo {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav { padding: 15px 20px; }
+            form { padding: 2rem 1.5rem; }
+        }
+
+        /* Scroll Animation Classes */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Staggered delays for grids */
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
     </style>
 </head>
 <body>
 
-    <!-- WebGL Canvas Container -->
-    <div id="p5-container"></div>
-
     <!-- Navigation -->
     <nav>
         <a href="#" class="logo">ANIMA <span class="glowing-q">Q</span></a>
-        
-        <!-- Hamburger Icon -->
-        <div class="menu-toggle" id="menuToggle">
+        <div class="hamburger" onclick="toggleMenu()">
             <span></span>
             <span></span>
             <span></span>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="#hero" onclick="toggleMenu()">Home</a>
+            <a href="#menu" onclick="toggleMenu()">Menu</a>
+            <a href="#booking" onclick="toggleMenu()">Booking</a>
+            <a href="#about" onclick="toggleMenu()">About</a>
+            <a href="#contact" onclick="toggleMenu()">Contact</a>
         </div>
     </nav>
 
-    <!-- Full Screen Menu Overlay -->
-    <div class="menu-overlay" id="menuOverlay">
-        <ul>
-            <li><a href="#menu">Menu</a></li>
-            <li><a href="#booking">Booking</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
-    </div>
-
-    <!-- Hero Section -->
-    <section class="hero">
+    <!-- Hero Slideshow Section -->
+    <section id="hero">
         <div class="slideshow-container">
-            <!-- Contemporary Italian Cuisine Images -->
-            <img class="slide active" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=2664&auto=format&fit=crop" alt="Modern Pasta">
-            <img class="slide" src="https://images.unsplash.com/photo-1595295333158-4742f28fbd85?q=80&w=2574&auto=format&fit=crop" alt="Plated Italian Dish">
-            <img class="slide" src="https://images.unsplash.com/photo-1600803907087-f56d462fd26b?q=80&w=2564&auto=format&fit=crop" alt="Gourmet Plating">
+            <img class="slide active" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=2664&auto=format&fit=crop" alt="Italian Dish 1">
+            <img class="slide" src="https://images.unsplash.com/photo-1595295333158-4742f28fbd85?q=80&w=2574&auto=format&fit=crop" alt="Italian Dish 2">
+            <img class="slide" src="https://images.unsplash.com/photo-1600803907087-f56d462fd26b?q=80&w=2564&auto=format&fit=crop" alt="Italian Dish 3">
         </div>
-
-        <div class="hero-content">
-            <h1 class="hero-title">Anima <span class="glowing-q">Q</span></h1>
-            <p class="hero-subtitle">The Soul of Contemporary Italian</p>
+        <div class="hero-content fade-in">
+            <h1>Anima <span class="glowing-q">Q</span></h1>
+            <p>Contemporary Italian Kitchen</p>
         </div>
     </section>
 
-    <!-- Introductory Content -->
-    <section class="content-section" id="about">
-        <div class="grid-layout">
-            <div class="text-block">
-                <h2>Culinary Artistry</h2>
-                <p>Welcome to Anima Q. We bridge the rich heritage of rustic Italian traditions with avant-garde culinary techniques. The moving elements behind this text represent the fluidity of our process—the drape of a chef's apron and the graceful movement of our service.</p>
-                <p>Immerse yourself in a dining experience where every detail, from the ambient lighting to the architecture of the plate, is meticulously crafted.</p>
+    <!-- Menu Section -->
+    <section id="menu" style="background-color: var(--bg-white);">
+        <h2 class="section-title fade-in">Curated Menu</h2>
+        <div class="menu-grid">
+            <div class="menu-item fade-in delay-1">
+                <img src="https://images.unsplash.com/photo-1619881589316-56c7f9e6b587?auto=format&fit=crop&q=80&w=800" alt="Antipasti">
+                <h3>Antipasti</h3>
+                <p>Locally sourced, minimalist starters designed to awaken the palate.</p>
             </div>
-            <!-- Blank div to allow the p5.js artwork to breathe on the right side -->
-            <div></div> 
+            <div class="menu-item fade-in delay-2">
+                <img src="https://images.unsplash.com/photo-1621996311239-531f0b503e5b?auto=format&fit=crop&q=80&w=800" alt="Primi">
+                <h3>Primi Piatti</h3>
+                <p>Hand-rolled pasta, rich textures, and harmoniously refined sauces.</p>
+            </div>
+            <div class="menu-item fade-in delay-3">
+                <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800" alt="Dolci">
+                <h3>Dolci</h3>
+                <p>Elegant, contemporary desserts providing a delicate finish.</p>
+            </div>
         </div>
     </section>
 
+    <!-- Interactive Organic WebGL Art Break -->
+    <section id="art-section">
+        <div id="p5-container"></div>
+        <div class="art-overlay fade-in">
+            <h2>The Fabric of Taste</h2>
+            <p style="font-style: italic; max-width: 600px; margin: 10px auto;">Interact with the digital canvas. Inspired by the organic drape of our uniform and the fluid harmony of our kitchen.</p>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="booking" style="background-color: #f7f5ef;">
+        <h2 class="section-title fade-in">Reserve a Table</h2>
+        <form class="fade-in">
+            <input type="text" placeholder="Full Name" required>
+            <input type="email" placeholder="Email Address" required>
+            <div style="display: flex; gap: 1rem;">
+                <input type="date" required style="flex: 1;">
+                <input type="time" required style="flex: 1;">
+            </div>
+            <select required>
+                <option value="" disabled selected>Number of Guests</option>
+                <option value="1">1 Person</option>
+                <option value="2">2 People</option>
+                <option value="3">3 People</option>
+                <option value="4">4 People</option>
+                <option value="5+">5+ People (Contact Us)</option>
+            </select>
+            <button type="submit">Confirm Booking</button>
+        </form>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" style="background-color: var(--bg-white);">
+        <div class="text-content fade-in">
+            <h2 class="section-title">Our Philosophy</h2>
+            <p>
+                ANIMA Q strips away the excess to reveal the soul of Italian cuisine. Born from a series of conceptual sketches and a dedication to the true 'Harmony' of ingredients, we fuse art, design, and culinary mastery into a singular dining experience.
+            </p>
+            <p>
+                Our signature green and gold aesthetic reflects our commitment to natural, premium produce and the glowing standard of our hospitality. Every plate is a canvas; every meal is a curated exhibition.
+            </p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" style="background-color: #f7f5ef; min-height: 60vh;">
+        <h2 class="section-title fade-in">Contact</h2>
+        <div class="text-content contact-info fade-in">
+            <p>123 Culinary Lane, Melbourne, VIC 3000</p>
+            <p>ciao@animaq.com.au</p>
+            <p>+61 3 9000 0000</p>
+            <br><br>
+            <p style="font-family: var(--font-heading); color: var(--accent-gold); font-size: 2rem; font-style: italic;">Follow the Q.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="logo footer-logo" style="color: var(--accent-gold);">ANIMA <span style="color: var(--bg-white); margin-left: 4px;" class="glowing-q">Q</span></div>
+        <p style="font-size: 0.9rem; opacity: 0.7;">&copy; 2026 ANIMA Q. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
     <script>
-        /* --- HAMBURGER MENU LOGIC --- */
-        const menuToggle = document.getElementById('menuToggle');
-        const menuOverlay = document.getElementById('menuOverlay');
-        const menuLinks = document.querySelectorAll('.menu-overlay a');
-
-        menuToggle.addEventListener('click', () => {
-            menuToggle.classList.toggle('active');
-            menuOverlay.classList.toggle('active');
-        });
-
-        // Close menu when clicking a link
-        menuLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                menuToggle.classList.remove('active');
-                menuOverlay.classList.remove('active');
-            });
-        });
-
-        /* --- SLIDESHOW LOGIC --- */
+        // --- Slideshow Logic ---
         const slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
 
@@ -361,121 +524,153 @@
             currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].classList.add('active');
         }
-        setInterval(nextSlide, 6000);
+        setInterval(nextSlide, 5000);
 
+        // --- Hamburger Menu Logic ---
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const hamburger = document.querySelector('.hamburger');
+            navLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
 
-        /* --- ADVANCED P5.JS WEBGL (MINIMALIST MOVING ARTWORKS) --- */
-        // This generates a 3D fluid fabric (representing the apron) 
-        // and floating orbital lines (representing the waiter carrying glasses).
+        // --- Scroll Animation Observer ---
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach((el) => {
+            observer.observe(el);
+        });
+
+        // --- Advanced Organic p5.js WebGL Shader ---
+        // This shader creates a highly fluid, fabric-like organic animation 
+        // mimicking folded green aprons and liquid gold.
         
-        let cols, rows;
-        let scl = 40;
-        let w = 2000;
-        let h = 1200;
-        let flying = 0;
-        let terrain = [];
+        const vertexShader = `
+            attribute vec3 aPosition;
+            attribute vec2 aTexCoord;
+            varying vec2 vTexCoord;
+            void main() {
+                vTexCoord = aTexCoord;
+                vec4 positionVec4 = vec4(aPosition, 1.0);
+                positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+                gl_Position = positionVec4;
+            }
+        `;
+
+        const fragmentShader = `
+            precision highp float;
+            uniform vec2 u_resolution;
+            uniform float u_time;
+            uniform vec2 u_mouse;
+
+            // Colors based on 'Harmony' Palette
+            vec3 darkGreen = vec3(0.08, 0.18, 0.11); // Deepest fold shadow
+            vec3 primaryGreen = vec3(0.106, 0.220, 0.141); // #1b3824
+            vec3 goldColor = vec3(0.831, 0.686, 0.216);  // #d4af37
+            
+            // Fractal Brownian Motion for highly organic fabric-like folds
+            mat2 rot(float a) {
+                float s = sin(a), c = cos(a);
+                return mat2(c, -s, s, c);
+            }
+
+            float noise(vec2 p) {
+                float n = sin(p.x) * cos(p.y);
+                return n * 0.5 + 0.5;
+            }
+
+            float fbm(vec2 p) {
+                float value = 0.0;
+                float amplitude = 0.5;
+                for (int i = 0; i < 4; i++) {
+                    value += amplitude * noise(p);
+                    p *= rot(0.5);
+                    p *= 2.0;
+                    amplitude *= 0.5;
+                }
+                return value;
+            }
+
+            void main() {
+                // Normalize coordinates
+                vec2 st = gl_FragCoord.xy / u_resolution.xy;
+                st.x *= u_resolution.x / u_resolution.y;
+
+                // Interactive mouse influence (distorts the fabric)
+                vec2 mousePos = u_mouse / u_resolution;
+                mousePos.x *= u_resolution.x / u_resolution.y;
+                float mouseDist = length(st - mousePos);
+                vec2 distortion = (st - mousePos) * exp(-mouseDist * 3.0) * 0.2;
+                st += distortion;
+
+                // Organic coordinate warping (creating folds)
+                vec2 q = vec2(0.);
+                q.x = fbm(st + vec2(u_time * 0.1, u_time * 0.15));
+                q.y = fbm(st + vec2(u_time * 0.12, u_time * 0.08));
+
+                vec2 r = vec2(0.);
+                r.x = fbm(st + 1.0 * q + vec2(1.7, 9.2) + u_time * 0.15);
+                r.y = fbm(st + 1.0 * q + vec2(8.3, 2.8) + u_time * 0.126);
+
+                float f = fbm(st + r);
+
+                // Map noise values to our color palette
+                vec3 color = mix(darkGreen, primaryGreen, clamp((f * f) * 4.0, 0.0, 1.0));
+                
+                // Add shimmering gold highlights on the crests of the folds
+                float goldHighlight = smoothstep(0.4, 0.8, f * noise(q * 3.0));
+                color = mix(color, goldColor, goldHighlight * 0.7);
+
+                // Add mouse glow
+                float glow = exp(-mouseDist * 4.0) * 0.3;
+                color += goldColor * glow;
+
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        let theShader;
 
         function setup() {
-            let canvas = createCanvas(windowWidth, windowHeight, WEBGL);
+            let container = document.getElementById('p5-container');
+            let canvas = createCanvas(container.offsetWidth, container.offsetHeight, WEBGL);
             canvas.parent('p5-container');
             
-            cols = w / scl;
-            rows = h / scl;
-            
-            // Create 2D array for terrain/fabric heights
-            for (let x = 0; x < cols; x++) {
-                terrain[x] = [];
-                for (let y = 0; y < rows; y++) {
-                    terrain[x][y] = 0; 
-                }
-            }
+            theShader = createShader(vertexShader, fragmentShader);
+            noStroke();
         }
 
         function draw() {
-            // Background is Deep Green, slightly darker than CSS to create depth
-            background(15, 28, 20); 
+            shader(theShader);
             
-            // Subtle, warm lighting setup
-            ambientLight(50);
-            directionalLight(220, 168, 73, 1, 1, -1); // Gold light from top right
-            pointLight(255, 179, 71, mouseX - width/2, mouseY - height/2, 200); // Orange/Gold glow follows mouse
-
-            /* --- 1. THE FLUID FABRIC (Abstract Apron) --- */
-            flying -= 0.01;
-            let yoff = flying;
-            for (let y = 0; y < rows; y++) {
-                let xoff = 0;
-                for (let x = 0; x < cols; x++) {
-                    // Perlin noise generates smooth, fabric-like undulations
-                    terrain[x][y] = map(noise(xoff, yoff), 0, 1, -100, 150);
-                    xoff += 0.1;
-                }
-                yoff += 0.1;
-            }
-
-            push();
-            translate(-w / 2, -h / 2 + 100, -300);
-            rotateX(PI / 2.5); // Tilt away from viewer
+            theShader.setUniform("u_resolution", [width, height]);
+            theShader.setUniform("u_time", millis() / 1000.0);
             
-            noFill();
-            // Gold, semi-transparent wireframe
-            stroke(220, 168, 73, 60); 
-            strokeWeight(1);
-
-            for (let y = 0; y < rows - 1; y++) {
-                beginShape(TRIANGLE_STRIP);
-                for (let x = 0; x < cols; x++) {
-                    vertex(x * scl, y * scl, terrain[x][y]);
-                    vertex(x * scl, (y + 1) * scl, terrain[x][y + 1]);
-                }
-                endShape();
-            }
-            pop();
-
-            /* --- 2. THE MINIMALIST FIGURE (Abstract Waiter & Glasses) --- */
-            // Drawing smooth, golden trigonometric ribbons in 3D space
-            push();
-            let time = frameCount * 0.01;
+            // Ease mouse coordinates to make the fluid interaction feel heavier/luxurious
+            let targetMouseX = constrain(mouseX, 0, width);
+            let targetMouseY = constrain(mouseY, 0, height);
             
-            // Move figure to the right side of the screen
-            translate(width * 0.2, 0, 100); 
-            
-            // Rotate based on mouse to add interactivity
-            rotateY(time + (mouseX * 0.001));
-            rotateX((mouseY * 0.001));
+            theShader.setUniform("u_mouse", [targetMouseX, targetMouseY]);
 
-            noFill();
-            stroke(220, 168, 73, 150); // Brighter gold
-            strokeWeight(2);
-
-            // Draw morphing abstract geometric ribbons
-            beginShape();
-            for(let i = 0; i < TWO_PI; i += 0.1) {
-                // Complex sine waves create elegant, continuous forms resembling a silhouette 
-                let r = 150 + sin(time * 2 + i * 3) * 50;
-                let x = r * cos(i) * sin(time + i);
-                let y = r * sin(i) * cos(time * 0.5);
-                let z = sin(time + i * 2) * 100;
-                
-                // Add a glowing effect
-                if(i % 0.5 < 0.1) {
-                    push();
-                    translate(x, y, z);
-                    noStroke();
-                    fill(255, 179, 71, 200); // Neon Q color
-                    sphere(2); // Small glowing orbs representing the wine glasses
-                    pop();
-                }
-                
-                vertex(x, y, z);
-            }
-            endShape(CLOSE);
-            pop();
+            rect(0, 0, width, height);
         }
 
-        // Keep canvas responsive
         function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
+            let container = document.getElementById('p5-container');
+            resizeCanvas(container.offsetWidth, container.offsetHeight);
         }
     </script>
 </body>
