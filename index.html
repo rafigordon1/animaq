@@ -36,7 +36,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Hide default cursor only on devices with a mouse */
         @media (pointer: fine) {
             body { cursor: none; }
         }
@@ -102,11 +101,10 @@
             font-weight: 600;
         }
 
-        /* Explicitly styling the Q so it doesn't look like a 2 */
         .glowing-q {
             color: var(--accent-gold);
-            font-style: normal; /* Removed italic to make it look more like a standard Q */
-            font-family: var(--font-body); /* Using sans-serif for the Q makes it distinctly not a 2 */
+            font-style: normal; 
+            font-family: var(--font-body); 
             font-weight: 400;
             text-shadow: 0 0 15px rgba(212, 175, 55, 0.6), 0 0 30px rgba(212, 175, 55, 0.3);
             margin-left: 2px;
@@ -161,86 +159,104 @@
             animation: fadeUp 1s ease forwards 0.8s;
         }
 
-        /* --- MENU SECTION --- */
+        /* --- MENU SECTION (Editorial & Innovative) --- */
         .menu-section {
-            padding: 10vw 5%;
+            padding: 15vw 5%;
             max-width: 1400px;
             margin: 0 auto;
         }
 
         .section-header {
-            font-family: var(--font-heading);
-            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-family: var(--font-body);
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 12px;
+            font-size: clamp(1.2rem, 3vw, 2rem);
             color: var(--accent-gold);
-            margin-bottom: 6rem;
-            font-style: italic;
+            margin-bottom: 8rem;
+            text-align: center;
         }
 
         .menu-item {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6vw;
+            display: flex;
             align-items: center;
-            margin-bottom: 12vh;
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 0.8s ease;
+            justify-content: space-between;
+            margin-bottom: 20vh;
+            gap: 8vw;
         }
 
-        .menu-item.visible {
-            opacity: 1;
-            transform: translateY(0);
+        .menu-item:nth-child(even) {
+            flex-direction: row-reverse;
         }
 
-        .menu-item:nth-child(odd) {
-            direction: rtl;
-        }
-        .menu-item:nth-child(odd) > * {
-            direction: ltr;
-        }
-
+        /* Dynamic Image Sizing & Clip-Path Reveal */
         .menu-img-wrapper {
             position: relative;
             overflow: hidden;
-            border-radius: 4px;
-            aspect-ratio: 4/3;
+            border-radius: 2px;
+            width: 45%;
+            height: 70vh;
+            clip-path: inset(100% 0 0 0); /* Hidden at start */
+            transition: clip-path 1.4s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        /* Varying sizes for an editorial feel */
+        .menu-item:nth-child(3) .menu-img-wrapper {
+            width: 55%;
+            height: 55vh;
+        }
+
+        .menu-item.visible .menu-img-wrapper {
+            clip-path: inset(0 0 0 0); /* Revealed */
         }
 
         .menu-img {
             width: 100%;
-            height: 120%;
+            height: 130%;
             object-fit: cover;
-            transform: translateY(-10%);
+            transform: translateY(-15%);
             transition: transform 0.1s linear;
         }
 
         .menu-text {
-            padding: 2rem 0;
+            width: 45%;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s ease 0.4s;
+        }
+
+        .menu-item.visible .menu-text {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .menu-text h3 {
             font-family: var(--font-heading);
-            font-size: clamp(2rem, 3vw, 2.5rem);
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
             margin-bottom: 1rem;
             color: var(--text-light);
+            line-height: 1.1;
         }
 
         .menu-text p {
             font-size: 1.05rem;
             line-height: 1.8;
-            color: rgba(253, 252, 249, 0.8);
+            color: rgba(253, 252, 249, 0.7);
+            margin-bottom: 2rem;
         }
 
         .menu-text .price {
-            display: block;
-            margin-top: 1.5rem;
+            display: inline-block;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--accent-gold);
             color: var(--accent-gold);
-            font-family: var(--font-heading);
-            font-size: 1.3rem;
-            font-style: italic;
+            font-family: var(--font-body);
+            font-weight: 300;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
         }
 
-        /* --- BOOKING SECTION (Improved UI) --- */
+        /* --- BOOKING SECTION --- */
         .booking-section {
             padding: 10vw 5%;
             display: flex;
@@ -271,7 +287,6 @@
             position: relative;
         }
 
-        /* Added background to inputs for accessibility and contrast */
         .form-group input, .form-group select {
             width: 100%;
             padding: 15px;
@@ -336,12 +351,17 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .nav-links { display: none; }
-            .menu-item, .menu-item:nth-child(odd) {
-                grid-template-columns: 1fr;
+            .menu-item, .menu-item:nth-child(even) {
+                flex-direction: column;
                 gap: 2rem;
             }
+            .menu-img-wrapper, .menu-item:nth-child(3) .menu-img-wrapper {
+                width: 100%;
+                height: 50vh;
+            }
+            .menu-text { width: 100%; }
             .form-row { grid-template-columns: 1fr; gap: 0; }
             .booking-form { padding: 2rem; }
         }
@@ -367,7 +387,7 @@
     </section>
 
     <section class="menu-section" id="menu">
-        <h2 class="section-header scroll-reveal">Curated Offerings.</h2>
+        <h2 class="section-header scroll-reveal">Curated Offerings</h2>
         
         <div class="menu-item scroll-reveal">
             <div class="menu-img-wrapper">
@@ -394,8 +414,8 @@
 
     <section class="booking-section" id="booking">
         <form class="booking-form scroll-reveal">
-            <h2>Secure Your Experience</h2>
-            <div class="form-group">
+            <h2 style="font-family: var(--font-body); font-weight: 300; text-transform: uppercase; letter-spacing: 6px; font-size: 1.5rem;">Secure Your Experience</h2>
+            <div class="form-group" style="margin-top: 3rem;">
                 <input type="text" placeholder="Nominate a Guest Name" required class="interactive">
             </div>
             <div class="form-row">
@@ -445,7 +465,7 @@
             else navbar.classList.remove('scrolled');
         });
 
-        // --- Scroll Reveals ---
+        // --- Scroll Reveals (Includes Clip-Path Triggers) ---
         const revealElements = document.querySelectorAll('.scroll-reveal');
         const revealOnScroll = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
@@ -454,7 +474,7 @@
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.15, rootMargin: "0px 0px -50px 0px" });
+        }, { threshold: 0.2, rootMargin: "0px 0px -100px 0px" });
 
         revealElements.forEach(el => revealOnScroll.observe(el));
 
@@ -464,7 +484,7 @@
             parallaxImages.forEach(img => {
                 let rect = img.getBoundingClientRect();
                 if(rect.top < window.innerHeight && rect.bottom > 0) {
-                    img.style.transform = `translateY(${(rect.top - window.innerHeight/2) * 0.05}px)`;
+                    img.style.transform = `translateY(${(rect.top - window.innerHeight/2) * 0.08}px)`;
                 }
             });
         });
@@ -488,13 +508,11 @@
             uniform float u_time;
             uniform vec2 u_mouse;
 
-            // Deep forest & moss colors
             vec3 colorBg = vec3(0.06, 0.11, 0.08); 
             vec3 colorMoss = vec3(0.18, 0.29, 0.21); 
             vec3 colorHighlight = vec3(0.3, 0.45, 0.25);
             vec3 colorGold = vec3(0.83, 0.69, 0.22);
             
-            // High frequency noise for moss texture
             float random(vec2 st) {
                 return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
             }
@@ -524,7 +542,6 @@
             }
 
             void main() {
-                // Correct aspect ratio for accurate mapping
                 vec2 st = gl_FragCoord.xy / u_resolution.xy;
                 float aspect = u_resolution.x / u_resolution.y;
                 st.x *= aspect;
@@ -532,37 +549,32 @@
                 vec2 mousePos = u_mouse / u_resolution.xy;
                 mousePos.x *= aspect;
                 
-                // Calculate precise distance to mouse
+                // Tighter, more precise distance mapping
                 float distToMouse = distance(st, mousePos);
+                float mouseGlow = smoothstep(0.25, 0.0, distToMouse); // Shrunk radius for accuracy
                 
-                // Mouse interaction pushes and brightens the moss
-                float mouseGlow = smoothstep(0.4, 0.0, distToMouse);
-                vec2 distortion = normalize(st - mousePos) * mouseGlow * 0.1;
+                vec2 distortion = normalize(st - mousePos) * mouseGlow * 0.05;
                 
                 vec2 q = vec2(0.);
                 q.x = fbm(st + distortion + u_time * 0.02);
                 q.y = fbm(st + distortion + vec2(1.0));
 
                 vec2 r = vec2(0.);
-                // High multiplier on 'st' for a highly textured, grainy moss look
                 r.x = fbm(st * 4.0 + q + u_time * 0.015);
                 r.y = fbm(st * 4.0 + q + vec2(8.3, 2.8) + u_time * 0.01);
 
                 float f = fbm(st * 3.0 + r);
 
-                // Mix colors based on noise
                 vec3 color = mix(colorBg, colorMoss, f);
                 color = mix(color, colorHighlight, smoothstep(0.4, 0.8, f));
                 
-                // Add tiny gold flecks naturally occurring in the texture
                 float goldFleck = smoothstep(0.75, 1.0, fbm(st * 15.0));
                 color = mix(color, colorGold, goldFleck * 0.4);
 
-                // Mouse actively illuminates the moss underneath accurately
-                color += colorHighlight * mouseGlow * 0.8;
-                color += colorGold * mouseGlow * 0.2;
+                // Spotlight overlay tightly bound to mouse
+                color += colorHighlight * mouseGlow * 0.6;
+                color += colorGold * mouseGlow * 0.15;
 
-                // Subtle grain
                 color += (random(st + u_time) - 0.5) * 0.03;
 
                 gl_FragColor = vec4(color, 1.0);
@@ -583,7 +595,7 @@
             theShader.setUniform("u_resolution", [width, height]);
             theShader.setUniform("u_time", millis() / 1000.0);
             
-            // Map p5 mouse coordinates directly for the shader (Y is inverted in WebGL by default)
+            // Accurately pass mouse coordinates to shader
             let mx = constrain(mouseX, 0, width);
             let my = height - constrain(mouseY, 0, height); 
             theShader.setUniform("u_mouse", [mx, my]);
