@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>L'Avanguardia | Contemporary Italian</title>
-    <!-- p5.js Library for WebGL/Interactivity -->
+    <title>ANIMA Q | Contemporary Italian</title>
+    <!-- p5.js Library for WebGL -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     
     <style>
-        /* Google Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap');
+        /* Google Fonts matching the "Harmony" aesthetic */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400&display=swap');
 
-        /* CSS Variables for Palette & Spacing */
         :root {
-            --bg-color: #F9F6F0; /* Cream */
-            --text-main: #1A1A1A; /* Charcoal */
-            --accent: #C85A32; /* Terracotta */
-            --accent-light: #E8A88A;
+            --bg-green: #14241A; /* Deep Forest Green */
+            --text-gold: #DCA849; /* Mustard/Gold */
+            --text-light: #F5EEDB; /* Creamy Off-White */
             --font-heading: 'Playfair Display', serif;
             --font-body: 'Inter', sans-serif;
+            --q-glow: #FFB347; /* Neon Gold/Orange for the Q */
         }
 
         * {
@@ -28,24 +27,25 @@
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--bg-green);
+            color: var(--text-light);
             font-family: var(--font-body);
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* p5.js Canvas Container */
+        /* --- WEBGL BACKGROUND --- */
         #p5-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: -1; /* Sits behind content */
-            pointer-events: none; /* Let clicks pass through to content */
+            z-index: -1; 
+            pointer-events: none; 
         }
 
-        /* Navigation */
+        /* --- NAVIGATION & HAMBURGER MENU --- */
         nav {
             position: fixed;
             top: 0;
@@ -54,38 +54,121 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 100;
-            mix-blend-mode: difference;
-            color: #fff;
+            z-index: 1000;
+            transition: background 0.3s ease;
         }
 
         .logo {
             font-family: var(--font-heading);
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: #fff;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 4px;
+            color: var(--text-light);
             text-decoration: none;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* The Neon Glowing Q */
+        .glowing-q {
+            color: var(--q-glow);
+            text-shadow: 
+                0 0 5px rgba(255, 179, 71, 0.8),
+                0 0 15px rgba(255, 179, 71, 0.6),
+                0 0 30px rgba(255, 179, 71, 0.4);
+            font-style: italic;
+        }
+
+        /* Hamburger Icon */
+        .menu-toggle {
+            cursor: pointer;
+            z-index: 1001; /* Keep above overlay */
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 30px;
+            height: 2px;
+            background-color: var(--text-gold);
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle.active span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+            background-color: var(--text-light);
+        }
+        .menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .menu-toggle.active span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+            background-color: var(--text-light);
+        }
+
+        /* Full Screen Menu Overlay */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(20, 36, 26, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .menu-overlay ul {
+            list-style: none;
+            text-align: center;
+        }
+
+        .menu-overlay li {
+            margin: 2rem 0;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .menu-overlay.active li {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Staggered animation for menu items */
+        .menu-overlay.active li:nth-child(1) { transition-delay: 0.1s; }
+        .menu-overlay.active li:nth-child(2) { transition-delay: 0.2s; }
+        .menu-overlay.active li:nth-child(3) { transition-delay: 0.3s; }
+        .menu-overlay.active li:nth-child(4) { transition-delay: 0.4s; }
+
+        .menu-overlay a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-family: var(--font-heading);
+            font-size: clamp(2rem, 5vw, 4rem);
             transition: color 0.3s ease;
         }
 
-        .nav-links a:hover {
-            color: var(--accent);
+        .menu-overlay a:hover {
+            color: var(--text-gold);
         }
 
-        /* Hero Section & Slideshow */
+        /* --- HERO & SLIDESHOW --- */
         .hero {
             position: relative;
             height: 100vh;
@@ -95,6 +178,7 @@
             justify-content: center;
             text-align: center;
             overflow: hidden;
+            background: transparent;
         }
 
         .slideshow-container {
@@ -104,6 +188,8 @@
             width: 100%;
             height: 100%;
             z-index: 1;
+            mix-blend-mode: overlay; /* Blends images beautifully with the green WebGL background */
+            opacity: 0.4; /* Keeps the focus on the aesthetic and WebGL */
         }
 
         .slide {
@@ -114,8 +200,9 @@
             height: 100%;
             object-fit: cover;
             opacity: 0;
-            transition: opacity 1.5s ease-in-out, transform 6s ease-out;
+            transition: opacity 2s ease-in-out, transform 8s ease-out;
             transform: scale(1.05);
+            filter: grayscale(30%) contrast(120%);
         }
 
         .slide.active {
@@ -123,182 +210,148 @@
             transform: scale(1);
         }
 
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
-            z-index: 2;
-        }
-
         .hero-content {
             position: relative;
             z-index: 10;
-            color: #fff;
+            max-width: 900px;
             padding: 0 20px;
-            max-width: 800px;
         }
 
         .hero-title {
             font-family: var(--font-heading);
-            font-size: clamp(3rem, 8vw, 6rem);
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeUp 1s forwards 0.5s;
+            font-size: clamp(3rem, 8vw, 7rem);
+            color: var(--text-gold);
+            line-height: 1;
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .hero-subtitle {
-            font-size: clamp(1rem, 2vw, 1.25rem);
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
             font-weight: 300;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
             text-transform: uppercase;
-            margin-bottom: 2rem;
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeUp 1s forwards 0.8s;
+            color: var(--text-light);
         }
 
-        .cta-button {
-            display: inline-block;
-            padding: 1rem 2.5rem;
-            border: 1px solid #fff;
-            color: #fff;
-            text-decoration: none;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            background: transparent;
-            transition: all 0.4s ease;
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeUp 1s forwards 1.1s;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-        }
-
-        .cta-button:hover {
-            background: #fff;
-            color: var(--text-main);
-        }
-
-        /* Interactive Content Section */
+        /* --- CONTENT SECTION --- */
         .content-section {
+            padding: 10rem 5%;
             position: relative;
-            padding: 8rem 5%;
             z-index: 10;
-            background: transparent; /* Allows WebGL to show through */
         }
 
         .grid-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 4rem;
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            align-items: center;
         }
 
         .text-block h2 {
             font-family: var(--font-heading);
-            font-size: clamp(2.5rem, 5vw, 4rem);
+            color: var(--text-gold);
+            font-size: clamp(2rem, 4vw, 3rem);
             margin-bottom: 2rem;
-            color: var(--text-main);
         }
 
         .text-block p {
             font-size: 1.1rem;
             line-height: 1.8;
             margin-bottom: 1.5rem;
-            color: #444;
+            color: rgba(245, 238, 219, 0.8); /* Dimmed cream */
         }
 
-        /* WebGL Interaction Hint */
-        .interaction-hint {
-            margin-top: 3rem;
-            padding: 1.5rem;
-            border-left: 2px solid var(--accent);
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        /* Animations */
-        @keyframes fadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Mobile Responsiveness */
+        /* --- MOBILE RESPONSIVE --- */
         @media (max-width: 768px) {
-            .nav-links {
-                display: none; /* Add hamburger menu logic for full build */
-            }
             .grid-layout {
                 grid-template-columns: 1fr;
-                gap: 2rem;
             }
-            .content-section {
-                padding: 4rem 5%;
+            nav {
+                padding: 1.5rem 5%;
+            }
+            .logo {
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- WebGL Background -->
+    <!-- WebGL Canvas Container -->
     <div id="p5-container"></div>
 
     <!-- Navigation -->
     <nav>
-        <div class="logo">L'Avanguardia</div>
-        <ul class="nav-links">
-            <li><a href="#menu">Menu</a></li>
-            <li><a href="#philosophy">Philosophy</a></li>
-            <li><a href="#reservations">Reservations</a></li>
-        </ul>
+        <a href="#" class="logo">ANIMA <span class="glowing-q">Q</span></a>
+        
+        <!-- Hamburger Icon -->
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
     </nav>
+
+    <!-- Full Screen Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay">
+        <ul>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="#booking">Booking</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </div>
 
     <!-- Hero Section -->
     <section class="hero">
         <div class="slideshow-container">
-            <!-- Contemporary Italian Cuisine Images (Unsplash) -->
+            <!-- Contemporary Italian Cuisine Images -->
             <img class="slide active" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=2664&auto=format&fit=crop" alt="Modern Pasta">
             <img class="slide" src="https://images.unsplash.com/photo-1595295333158-4742f28fbd85?q=80&w=2574&auto=format&fit=crop" alt="Plated Italian Dish">
             <img class="slide" src="https://images.unsplash.com/photo-1600803907087-f56d462fd26b?q=80&w=2564&auto=format&fit=crop" alt="Gourmet Plating">
-            <div class="overlay"></div>
         </div>
 
         <div class="hero-content">
-            <h1 class="hero-title">A Symphony of Taste</h1>
-            <p class="hero-subtitle">Redefining Italian Culinary Traditions</p>
-            <a href="#reservations" class="cta-button">Book a Table</a>
+            <h1 class="hero-title">Anima <span class="glowing-q">Q</span></h1>
+            <p class="hero-subtitle">The Soul of Contemporary Italian</p>
         </div>
     </section>
 
-    <!-- Content Section -->
-    <section class="content-section" id="philosophy">
+    <!-- Introductory Content -->
+    <section class="content-section" id="about">
         <div class="grid-layout">
             <div class="text-block">
-                <h2>The Art of Simplicity</h2>
-                <p>We source the finest hyper-local ingredients to reimagine the rustic flavors of Italy through a modern, avant-garde lens. Every dish is a dialogue between tradition and innovation.</p>
-                <p>Interact with the background using your cursor. Our digital space is designed to reflect the fluidity and dynamic nature of our kitchen—always evolving, deeply sensory.</p>
-                
-                <div class="interaction-hint">
-                    <small>✦ Move your mouse across the screen to disturb the digital olive oil droplets.</small>
-                </div>
+                <h2>Culinary Artistry</h2>
+                <p>Welcome to Anima Q. We bridge the rich heritage of rustic Italian traditions with avant-garde culinary techniques. The moving elements behind this text represent the fluidity of our process—the drape of a chef's apron and the graceful movement of our service.</p>
+                <p>Immerse yourself in a dining experience where every detail, from the ambient lighting to the architecture of the plate, is meticulously crafted.</p>
             </div>
-            <div class="image-block">
-                <!-- A spacer or complementary image could go here, but we let the WebGL shine -->
-            </div>
+            <!-- Blank div to allow the p5.js artwork to breathe on the right side -->
+            <div></div> 
         </div>
     </section>
 
     <script>
+        /* --- HAMBURGER MENU LOGIC --- */
+        const menuToggle = document.getElementById('menuToggle');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const menuLinks = document.querySelectorAll('.menu-overlay a');
+
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            menuOverlay.classList.toggle('active');
+        });
+
+        // Close menu when clicking a link
+        menuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                menuToggle.classList.remove('active');
+                menuOverlay.classList.remove('active');
+            });
+        });
+
         /* --- SLIDESHOW LOGIC --- */
         const slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
@@ -308,98 +361,121 @@
             currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].classList.add('active');
         }
-
-        // Change slide every 5 seconds
-        setInterval(nextSlide, 5000);
+        setInterval(nextSlide, 6000);
 
 
-        /* --- P5.JS WEBGL INTERACTIVE BACKGROUND --- */
-        let particles = [];
-        const numParticles = 150;
+        /* --- ADVANCED P5.JS WEBGL (MINIMALIST MOVING ARTWORKS) --- */
+        // This generates a 3D fluid fabric (representing the apron) 
+        // and floating orbital lines (representing the waiter carrying glasses).
+        
+        let cols, rows;
+        let scl = 40;
+        let w = 2000;
+        let h = 1200;
+        let flying = 0;
+        let terrain = [];
 
         function setup() {
             let canvas = createCanvas(windowWidth, windowHeight, WEBGL);
             canvas.parent('p5-container');
             
-            // Initialize particles
-            for(let i = 0; i < numParticles; i++) {
-                particles.push(new Particle());
-            }
+            cols = w / scl;
+            rows = h / scl;
             
-            noStroke();
+            // Create 2D array for terrain/fabric heights
+            for (let x = 0; x < cols; x++) {
+                terrain[x] = [];
+                for (let y = 0; y < rows; y++) {
+                    terrain[x][y] = 0; 
+                }
+            }
         }
 
         function draw() {
-            // Clear background with a transparent tint to let CSS background show slightly, 
-            // but in WebGL we clear completely for performance
-            clear();
+            // Background is Deep Green, slightly darker than CSS to create depth
+            background(15, 28, 20); 
             
-            // Set lighting for a premium, warm aesthetic
-            ambientLight(150);
-            directionalLight(200, 90, 50, 0.25, 0.25, -1);
-            pointLight(255, 200, 150, mouseX - width/2, mouseY - height/2, 200);
+            // Subtle, warm lighting setup
+            ambientLight(50);
+            directionalLight(220, 168, 73, 1, 1, -1); // Gold light from top right
+            pointLight(255, 179, 71, mouseX - width/2, mouseY - height/2, 200); // Orange/Gold glow follows mouse
 
-            // Rotate entire scene slowly
-            rotateY(frameCount * 0.002);
-            rotateX(frameCount * 0.001);
-
-            // Update and display particles
-            for(let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].display();
+            /* --- 1. THE FLUID FABRIC (Abstract Apron) --- */
+            flying -= 0.01;
+            let yoff = flying;
+            for (let y = 0; y < rows; y++) {
+                let xoff = 0;
+                for (let x = 0; x < cols; x++) {
+                    // Perlin noise generates smooth, fabric-like undulations
+                    terrain[x][y] = map(noise(xoff, yoff), 0, 1, -100, 150);
+                    xoff += 0.1;
+                }
+                yoff += 0.1;
             }
+
+            push();
+            translate(-w / 2, -h / 2 + 100, -300);
+            rotateX(PI / 2.5); // Tilt away from viewer
+            
+            noFill();
+            // Gold, semi-transparent wireframe
+            stroke(220, 168, 73, 60); 
+            strokeWeight(1);
+
+            for (let y = 0; y < rows - 1; y++) {
+                beginShape(TRIANGLE_STRIP);
+                for (let x = 0; x < cols; x++) {
+                    vertex(x * scl, y * scl, terrain[x][y]);
+                    vertex(x * scl, (y + 1) * scl, terrain[x][y + 1]);
+                }
+                endShape();
+            }
+            pop();
+
+            /* --- 2. THE MINIMALIST FIGURE (Abstract Waiter & Glasses) --- */
+            // Drawing smooth, golden trigonometric ribbons in 3D space
+            push();
+            let time = frameCount * 0.01;
+            
+            // Move figure to the right side of the screen
+            translate(width * 0.2, 0, 100); 
+            
+            // Rotate based on mouse to add interactivity
+            rotateY(time + (mouseX * 0.001));
+            rotateX((mouseY * 0.001));
+
+            noFill();
+            stroke(220, 168, 73, 150); // Brighter gold
+            strokeWeight(2);
+
+            // Draw morphing abstract geometric ribbons
+            beginShape();
+            for(let i = 0; i < TWO_PI; i += 0.1) {
+                // Complex sine waves create elegant, continuous forms resembling a silhouette 
+                let r = 150 + sin(time * 2 + i * 3) * 50;
+                let x = r * cos(i) * sin(time + i);
+                let y = r * sin(i) * cos(time * 0.5);
+                let z = sin(time + i * 2) * 100;
+                
+                // Add a glowing effect
+                if(i % 0.5 < 0.1) {
+                    push();
+                    translate(x, y, z);
+                    noStroke();
+                    fill(255, 179, 71, 200); // Neon Q color
+                    sphere(2); // Small glowing orbs representing the wine glasses
+                    pop();
+                }
+                
+                vertex(x, y, z);
+            }
+            endShape(CLOSE);
+            pop();
         }
 
+        // Keep canvas responsive
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
-        }
-
-        // Particle Class (Represents flowing ingredients/droplets)
-        class Particle {
-            constructor() {
-                this.pos = createVector(random(-width, width), random(-height, height), random(-400, 400));
-                this.baseSize = random(5, 25);
-                this.size = this.baseSize;
-                this.vel = createVector(random(-1, 1), random(-1, 1), random(-1, 1));
-                this.color = color(random(180, 230), random(80, 120), random(30, 60), 200); // Terracotta/Olive tones
-            }
-
-            update() {
-                this.pos.add(this.vel);
-
-                // Mouse interaction: repel particles
-                let mPos = createVector(mouseX - width/2, mouseY - height/2, 0);
-                let d = dist(this.pos.x, this.pos.y, mPos.x, mPos.y);
-                
-                if (d < 150) {
-                    let force = p5.Vector.sub(this.pos, mPos);
-                    force.normalize();
-                    force.mult(2);
-                    this.vel.add(force);
-                    this.size = lerp(this.size, this.baseSize * 2, 0.1);
-                } else {
-                    this.size = lerp(this.size, this.baseSize, 0.05);
-                }
-
-                // Friction
-                this.vel.mult(0.98);
-
-                // Gentle drift back to center if they go too far
-                let centerForce = p5.Vector.mult(this.pos, -0.001);
-                this.vel.add(centerForce);
-            }
-
-            display() {
-                push();
-                translate(this.pos.x, this.pos.y, this.pos.z);
-                
-                // Material properties for a glossy, olive-oil/wine look
-                specularMaterial(this.color);
-                shininess(50);
-                
-                sphere(this.size);
-                pop();
-            }
         }
     </script>
 </body>
