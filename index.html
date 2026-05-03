@@ -4,560 +4,555 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANIMA Q | Contemporary Italian Kitchen</title>
-    <!-- Google Fonts inspired by 'Harmony' elegant typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <!-- p5.js Library for WebGL Canvas -->
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <!-- p5.js Library for WebGL -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     
     <style>
-        /* CSS Variables based on Harmony image */
+        /* --- CORE VARIABLES --- */
         :root {
-            --primary-green: #1b3824; 
+            --bg-dark: #0f1c14; /* Deep, almost black green */
+            --primary-green: #1b3824;
             --accent-gold: #d4af37;
-            --bg-white: #fdfcf9;
-            --text-dark: #2c2c2c;
+            --text-light: #fdfcf9;
             --font-heading: 'Playfair Display', serif;
             --font-body: 'Montserrat', sans-serif;
+            --q-glow: rgba(212, 175, 55, 0.8);
         }
 
-        /* Base Styles & Reset */
+        /* --- RESET & SETUP --- */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            cursor: none; /* Hide default cursor for custom cursor */
+        }
+
+        html {
             scroll-behavior: smooth;
         }
 
         body {
             font-family: var(--font-body);
-            background-color: var(--bg-white);
-            color: var(--text-dark);
+            background-color: var(--bg-dark);
+            color: var(--text-light);
             overflow-x: hidden;
-            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
-        h1, h2, h3 {
-            font-family: var(--font-heading);
-            font-weight: 400;
+        /* --- CUSTOM CURSOR --- */
+        .custom-cursor {
+            position: fixed;
+            top: 0; left: 0;
+            width: 12px; height: 12px;
+            background-color: var(--accent-gold);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hovering {
+            width: 40px; height: 40px;
+            background-color: transparent;
+            border: 1px solid var(--accent-gold);
+            mix-blend-mode: normal;
         }
 
-        /* Navigation & Hamburger Menu */
+        /* --- WEBGL BACKGROUND --- */
+        #p5-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- NAVIGATION --- */
         nav {
             position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 20px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            background: rgba(253, 252, 249, 0.95);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            top: 0; width: 100%;
+            padding: 2rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+            transition: background 0.4s ease, padding 0.4s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(15, 28, 20, 0.8);
+            backdrop-filter: blur(15px);
+            padding: 1rem 5%;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
         }
 
         .logo {
             font-family: var(--font-heading);
             font-size: 2rem;
-            letter-spacing: 2px;
-            color: var(--primary-green);
+            color: var(--text-light);
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            letter-spacing: 4px;
+            font-weight: 600;
         }
 
         .glowing-q {
             color: var(--accent-gold);
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 
-                         0 0 20px rgba(212, 175, 55, 0.4), 
-                         0 0 30px rgba(212, 175, 55, 0.2);
-            animation: pulse-glow 3s infinite alternate;
+            font-style: italic;
+            text-shadow: 0 0 15px var(--q-glow), 0 0 30px rgba(212, 175, 55, 0.4);
+            animation: breathe 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes breathe {
+            0% { text-shadow: 0 0 10px var(--q-glow); transform: scale(1); }
+            100% { text-shadow: 0 0 25px var(--q-glow), 0 0 40px rgba(212, 175, 55, 0.6); transform: scale(1.05); }
+        }
+
+        .nav-links { display: flex; gap: 3rem; }
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: -2px; left: 0;
+            width: 100%; height: 1px; background: var(--accent-gold);
+            transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .nav-links a:hover::after { transform: translateX(0); }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .hero-title-wrapper {
+            overflow: hidden; /* For clipping animation */
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: clamp(4rem, 12vw, 10rem);
+            line-height: 0.9;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            transform: translateY(100%);
+            animation: slideUpReveal 1.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards 0.5s;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            margin-top: 2rem;
+            text-align: center;
+            opacity: 0;
+            animation: fadeIn 2s forwards 1.5s;
+        }
+
+        /* --- IMMERSIVE MENU SECTION (Asymmetrical) --- */
+        .menu-section {
+            padding: 10vw 5%;
+            position: relative;
+        }
+
+        .section-header {
+            font-family: var(--font-heading);
+            font-size: clamp(3rem, 6vw, 5rem);
+            color: var(--accent-gold);
+            margin-bottom: 5rem;
             font-style: italic;
         }
 
-        @keyframes pulse-glow {
-            0% { text-shadow: 0 0 5px rgba(212, 175, 55, 0.5); }
-            100% { text-shadow: 0 0 15px rgba(212, 175, 55, 0.9), 0 0 25px rgba(212, 175, 55, 0.6); }
-        }
-
-        .hamburger {
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            z-index: 1001;
-        }
-
-        .hamburger span {
-            width: 30px;
-            height: 2px;
-            background-color: var(--primary-green);
-            transition: 0.3s;
-        }
-
-        .nav-links {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 100vw;
-            height: 100vh;
-            background-color: var(--primary-green);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            transition: 0.5s ease;
-            z-index: 999;
-        }
-
-        .nav-links.active {
-            right: 0;
-        }
-
-        .nav-links a {
-            color: var(--accent-gold);
-            text-decoration: none;
-            font-family: var(--font-heading);
-            font-size: 2.5rem;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: var(--bg-white);
-        }
-
-        .hamburger.active span:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); background-color: var(--accent-gold); }
-        .hamburger.active span:nth-child(2) { opacity: 0; }
-        .hamburger.active span:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); background-color: var(--accent-gold); }
-
-        /* Sections */
-        section {
-            min-height: 100vh;
-            padding: 100px 5vw;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        /* Hero Slideshow Section */
-        #hero {
-            position: relative;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .slideshow-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background-color: var(--primary-green);
-        }
-
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 2s ease-in-out, transform 8s ease-out;
-            transform: scale(1.05);
-            filter: brightness(0.4) contrast(1.1);
-        }
-
-        .slide.active {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .hero-content {
-            text-align: center;
-            color: var(--bg-white);
-            z-index: 1;
-            padding: 0 20px;
-        }
-
-        .hero-content h1 {
-            font-size: clamp(3rem, 8vw, 6rem);
-            margin-bottom: 1rem;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-        }
-        
-        .hero-content p {
-            font-size: 1.2rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--accent-gold);
-        }
-
-        /* Content Sections Shared Styles */
-        .section-title {
-            text-align: center;
-            font-size: clamp(2rem, 5vw, 3rem);
-            color: var(--primary-green);
-            margin-bottom: 3rem;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            display: block;
-            width: 50px;
-            height: 2px;
-            background: var(--accent-gold);
-            margin: 15px auto 0;
-        }
-
-        /* Menu Grid */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 3rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
         .menu-item {
-            text-align: center;
-            padding: 2rem;
-            background: #fff;
-            border: 1px solid rgba(27, 56, 36, 0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 5vw;
+            margin-bottom: 15vh;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
 
-        .menu-item:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(27, 56, 36, 0.1);
-            border-color: rgba(212, 175, 55, 0.3);
+        .menu-item.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        .menu-item img {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            margin-bottom: 1.5rem;
-            filter: grayscale(30%);
-            transition: 0.5s ease;
-        }
-        
-        .menu-item:hover img {
-            filter: grayscale(0%);
+        .menu-item:nth-child(even) {
+            flex-direction: row-reverse;
         }
 
-        .menu-item h3 {
-            font-size: 1.8rem;
-            color: var(--primary-green);
-            margin-bottom: 0.5rem;
-        }
-
-        /* Interactive WebGL Art Section */
-        #art-section {
+        .menu-img-wrapper {
+            flex: 1;
+            height: 60vh;
+            overflow: hidden;
             position: relative;
-            padding: 0;
-            min-height: 70vh;
-            background-color: var(--primary-green);
+        }
+
+        .menu-img {
+            width: 100%;
+            height: 120%; /* Extra height for parallax */
+            object-fit: cover;
+            transform: translateY(-10%); /* Parallax start state */
+            transition: transform 0.1s linear;
+            filter: brightness(0.7) contrast(1.1);
+        }
+
+        .menu-text {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .menu-text h3 {
+            font-family: var(--font-heading);
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+
+        .menu-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: rgba(253, 252, 249, 0.7);
+            max-width: 400px;
+        }
+
+        .menu-text .price {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: var(--accent-gold);
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-style: italic;
+        }
+
+        /* --- BOOKING SECTION (Glassmorphism) --- */
+        .booking-section {
+            padding: 10vw 5%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .booking-form {
+            background: rgba(27, 56, 36, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 5rem;
+            width: 100%;
+            max-width: 800px;
+            position: relative;
             overflow: hidden;
         }
-        
-        #p5-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-        }
 
-        .art-overlay {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            color: var(--bg-white);
-            pointer-events: none;
-            padding: 0 20px;
-        }
-        
-        .art-overlay h2 {
-            font-size: clamp(2rem, 5vw, 4rem);
+        .booking-form h2 {
+            font-family: var(--font-heading);
+            font-size: 3rem;
             color: var(--accent-gold);
-            margin-bottom: 1rem;
+            margin-bottom: 3rem;
+            text-align: center;
         }
 
-        /* Forms (Booking) */
-        form {
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            background: #fff;
-            padding: 3rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+        .form-group {
+            position: relative;
+            margin-bottom: 2.5rem;
         }
 
-        input, select, textarea {
+        .form-group input, .form-group select {
             width: 100%;
-            padding: 15px;
-            border: none;
-            border-bottom: 1px solid rgba(27, 56, 36, 0.3);
+            padding: 10px 0;
             background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(253, 252, 249, 0.3);
+            color: var(--text-light);
             font-family: var(--font-body);
-            font-size: 1rem;
+            font-size: 1.1rem;
             outline: none;
             transition: border-color 0.3s;
-            color: var(--text-dark);
         }
 
-        input:focus, select:focus, textarea:focus {
-            border-bottom: 1px solid var(--accent-gold);
+        .form-group input:focus, .form-group select:focus {
+            border-bottom-color: var(--accent-gold);
         }
 
-        button {
-            padding: 15px 30px;
-            background-color: var(--primary-green);
-            color: var(--bg-white);
-            border: none;
+        .form-group label {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            color: rgba(253, 252, 249, 0.5);
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-family: var(--font-heading);
+            font-style: italic;
+        }
+
+        .form-group input:focus ~ label,
+        .form-group input:valid ~ label {
+            top: -20px;
+            font-size: 0.85rem;
+            color: var(--accent-gold);
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 1.5rem;
+            background: transparent;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
             font-family: var(--font-heading);
             font-size: 1.2rem;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            margin-top: 1rem;
+            text-transform: uppercase;
             letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: color 0.4s;
         }
 
-        button:hover {
-            background-color: var(--accent-gold);
-            color: var(--primary-green);
+        button.submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--accent-gold);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: -1;
         }
 
-        /* About & Contact Styles */
-        .text-content {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .text-content p {
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-            color: #4a4a4a;
+        button.submit-btn:hover {
+            color: var(--bg-dark);
         }
 
-        .contact-info p {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
+        button.submit-btn:hover::before {
+            transform: scaleX(1);
+            transform-origin: left;
         }
 
-        /* Footer */
+        /* --- FOOTER --- */
         footer {
-            background-color: var(--primary-green);
-            color: var(--bg-white);
+            padding: 5vw 5%;
             text-align: center;
-            padding: 4rem 1rem;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+            background: var(--bg-dark);
         }
-        
+
         .footer-logo {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            justify-content: center;
+            font-size: clamp(3rem, 8vw, 6rem);
+            margin-bottom: 2rem;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes slideUpReveal {
+            to { transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            nav { padding: 15px 20px; }
-            form { padding: 2rem 1.5rem; }
+            .nav-links { display: none; }
+            .menu-item, .menu-item:nth-child(even) {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            .menu-img-wrapper { width: 100%; height: 50vh; }
+            .booking-form { padding: 3rem 1.5rem; }
         }
-
-        /* Scroll Animation Classes */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* Staggered delays for grids */
-        .delay-1 { transition-delay: 0.1s; }
-        .delay-2 { transition-delay: 0.2s; }
-        .delay-3 { transition-delay: 0.3s; }
     </style>
 </head>
 <body>
 
+    <!-- Custom Cursor -->
+    <div class="custom-cursor" id="cursor"></div>
+
+    <!-- WebGL Canvas (Organic Liquid Gold/Green Fabric) -->
+    <div id="p5-container"></div>
+
     <!-- Navigation -->
-    <nav>
-        <a href="#" class="logo">ANIMA <span class="glowing-q">Q</span></a>
-        <div class="hamburger" onclick="toggleMenu()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <div class="nav-links" id="navLinks">
-            <a href="#hero" onclick="toggleMenu()">Home</a>
-            <a href="#menu" onclick="toggleMenu()">Menu</a>
-            <a href="#booking" onclick="toggleMenu()">Booking</a>
-            <a href="#about" onclick="toggleMenu()">About</a>
-            <a href="#contact" onclick="toggleMenu()">Contact</a>
+    <nav id="navbar">
+        <a href="#" class="logo interactive">ANIMA <span class="glowing-q">Q</span></a>
+        <div class="nav-links">
+            <a href="#menu" class="interactive">The Menu</a>
+            <a href="#booking" class="interactive">Reservations</a>
+            <a href="#about" class="interactive">Our Story</a>
         </div>
     </nav>
 
-    <!-- Hero Slideshow Section -->
-    <section id="hero">
-        <div class="slideshow-container">
-            <img class="slide active" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=2664&auto=format&fit=crop" alt="Italian Dish 1">
-            <img class="slide" src="https://images.unsplash.com/photo-1595295333158-4742f28fbd85?q=80&w=2574&auto=format&fit=crop" alt="Italian Dish 2">
-            <img class="slide" src="https://images.unsplash.com/photo-1600803907087-f56d462fd26b?q=80&w=2564&auto=format&fit=crop" alt="Italian Dish 3">
-        </div>
-        <div class="hero-content fade-in">
-            <h1>Anima <span class="glowing-q">Q</span></h1>
-            <p>Contemporary Italian Kitchen</p>
+    <!-- Hero -->
+    <section class="hero">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div class="hero-title-wrapper">
+                <h1 class="hero-title">Anima <span class="glowing-q">Q</span></h1>
+            </div>
+            <p class="hero-subtitle">The Soul of Modern Italy</p>
         </div>
     </section>
 
-    <!-- Menu Section -->
-    <section id="menu" style="background-color: var(--bg-white);">
-        <h2 class="section-title fade-in">Curated Menu</h2>
-        <div class="menu-grid">
-            <div class="menu-item fade-in delay-1">
-                <img src="https://images.unsplash.com/photo-1619881589316-56c7f9e6b587?auto=format&fit=crop&q=80&w=800" alt="Antipasti">
-                <h3>Antipasti</h3>
-                <p>Locally sourced, minimalist starters designed to awaken the palate.</p>
+    <!-- Asymmetrical Immersive Menu -->
+    <section class="menu-section" id="menu">
+        <h2 class="section-header scroll-reveal">Curated Offerings.</h2>
+        
+        <!-- Menu Item 1: Crudo -->
+        <div class="menu-item scroll-reveal">
+            <div class="menu-img-wrapper">
+                <img src="https://images.unsplash.com/photo-1595295333158-4742f28fbd85?auto=format&fit=crop&w=1200&q=80" class="menu-img parallax" alt="Crudo di Mare">
             </div>
-            <div class="menu-item fade-in delay-2">
-                <img src="https://images.unsplash.com/photo-1621996311239-531f0b503e5b?auto=format&fit=crop&q=80&w=800" alt="Primi">
-                <h3>Primi Piatti</h3>
-                <p>Hand-rolled pasta, rich textures, and harmoniously refined sauces.</p>
-            </div>
-            <div class="menu-item fade-in delay-3">
-                <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800" alt="Dolci">
-                <h3>Dolci</h3>
-                <p>Elegant, contemporary desserts providing a delicate finish.</p>
+            <div class="menu-text">
+                <h3>Crudo di Mare</h3>
+                <p>Wild-caught Hokkaido scallops, cold-pressed olive oil, finger lime, and white balsamic caviar. A minimalist approach to raw purity.</p>
+                <span class="price">32</span>
             </div>
         </div>
-    </section>
 
-    <!-- Interactive Organic WebGL Art Break -->
-    <section id="art-section">
-        <div id="p5-container"></div>
-        <div class="art-overlay fade-in">
-            <h2>The Fabric of Taste</h2>
-            <p style="font-style: italic; max-width: 600px; margin: 10px auto;">Interact with the digital canvas. Inspired by the organic drape of our uniform and the fluid harmony of our kitchen.</p>
+        <!-- Menu Item 2: Pasta -->
+        <div class="menu-item scroll-reveal">
+            <div class="menu-img-wrapper">
+                <img src="https://images.unsplash.com/photo-1621996311239-531f0b503e5b?auto=format&fit=crop&w=1200&q=80" class="menu-img parallax" alt="Agnolotti del Plin">
+            </div>
+            <div class="menu-text">
+                <h3>Agnolotti del Plin</h3>
+                <p>Hand-pinched pasta parcels filled with slow-braised duck, finished in a sage-infused brown butter and 36-month Parmigiano Reggiano foam.</p>
+                <span class="price">44</span>
+            </div>
+        </div>
+
+        <!-- Menu Item 3: Meat -->
+        <div class="menu-item scroll-reveal">
+            <div class="menu-img-wrapper">
+                <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1200&q=80" class="menu-img parallax" alt="Wagyu Filetto">
+            </div>
+            <div class="menu-text">
+                <h3>Filetto di Wagyu</h3>
+                <p>MBS9+ Wagyu tenderloin, smoked bone marrow emulsion, charred heirloom radicchio, and a reduction of Barolo wine.</p>
+                <span class="price">85</span>
+            </div>
+        </div>
+
+        <!-- Menu Item 4: Dessert -->
+        <div class="menu-item scroll-reveal">
+            <div class="menu-img-wrapper">
+                <img src="https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=1200&q=80" class="menu-img parallax" alt="Sfera di Tiramisù">
+            </div>
+            <div class="menu-text">
+                <h3>Sfera di Tiramisù</h3>
+                <p>A contemporary reconstruction. Espresso-soaked savoiardi encased in a fragile mascarpone sphere, melted tableside with hot cocoa ganache.</p>
+                <span class="price">24</span>
+            </div>
         </div>
     </section>
 
     <!-- Booking Section -->
-    <section id="booking" style="background-color: #f7f5ef;">
-        <h2 class="section-title fade-in">Reserve a Table</h2>
-        <form class="fade-in">
-            <input type="text" placeholder="Full Name" required>
-            <input type="email" placeholder="Email Address" required>
-            <div style="display: flex; gap: 1rem;">
-                <input type="date" required style="flex: 1;">
-                <input type="time" required style="flex: 1;">
+    <section class="booking-section" id="booking">
+        <form class="booking-form scroll-reveal">
+            <h2>Secure Your Experience</h2>
+            
+            <div class="form-group">
+                <input type="text" required class="interactive">
+                <label>Nominate a Guest Name</label>
             </div>
-            <select required>
-                <option value="" disabled selected>Number of Guests</option>
-                <option value="1">1 Person</option>
-                <option value="2">2 People</option>
-                <option value="3">3 People</option>
-                <option value="4">4 People</option>
-                <option value="5+">5+ People (Contact Us)</option>
-            </select>
-            <button type="submit">Confirm Booking</button>
+            
+            <div style="display: flex; gap: 2rem;">
+                <div class="form-group" style="flex: 1;">
+                    <!-- Date input styled cleanly -->
+                    <input type="date" required style="color: rgba(253,252,249,0.5);" class="interactive">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <select required class="interactive" style="color: rgba(253,252,249,0.5);">
+                        <option value="" disabled selected>Party Size</option>
+                        <option value="2">Table for 2</option>
+                        <option value="3">Table for 3</option>
+                        <option value="4">Table for 4</option>
+                        <option value="5">Private Dining (5+)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="button" class="submit-btn interactive">Request Reservation</button>
         </form>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" style="background-color: var(--bg-white);">
-        <div class="text-content fade-in">
-            <h2 class="section-title">Our Philosophy</h2>
-            <p>
-                ANIMA Q strips away the excess to reveal the soul of Italian cuisine. Born from a series of conceptual sketches and a dedication to the true 'Harmony' of ingredients, we fuse art, design, and culinary mastery into a singular dining experience.
-            </p>
-            <p>
-                Our signature green and gold aesthetic reflects our commitment to natural, premium produce and the glowing standard of our hospitality. Every plate is a canvas; every meal is a curated exhibition.
-            </p>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" style="background-color: #f7f5ef; min-height: 60vh;">
-        <h2 class="section-title fade-in">Contact</h2>
-        <div class="text-content contact-info fade-in">
-            <p>123 Culinary Lane, Melbourne, VIC 3000</p>
-            <p>ciao@animaq.com.au</p>
-            <p>+61 3 9000 0000</p>
-            <br><br>
-            <p style="font-family: var(--font-heading); color: var(--accent-gold); font-size: 2rem; font-style: italic;">Follow the Q.</p>
-        </div>
     </section>
 
     <!-- Footer -->
     <footer>
-        <div class="logo footer-logo" style="color: var(--accent-gold);">ANIMA <span style="color: var(--bg-white); margin-left: 4px;" class="glowing-q">Q</span></div>
-        <p style="font-size: 0.9rem; opacity: 0.7;">&copy; 2026 ANIMA Q. All Rights Reserved.</p>
+        <div class="logo footer-logo">ANIMA <span class="glowing-q">Q</span></div>
+        <p style="color: var(--accent-gold); font-family: var(--font-heading); font-style: italic; letter-spacing: 2px;">Melbourne, VIC</p>
     </footer>
 
-    <!-- Scripts -->
+    <!-- INTERACTIVE SCRIPTS -->
     <script>
-        // --- Slideshow Logic ---
-        const slides = document.querySelectorAll('.slide');
-        let currentSlide = 0;
+        // --- 1. Custom Cursor Logic ---
+        const cursor = document.getElementById('cursor');
+        const interactives = document.querySelectorAll('.interactive, a, button, input, select');
 
-        function nextSlide() {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }
-        setInterval(nextSlide, 5000);
-
-        // --- Hamburger Menu Logic ---
-        function toggleMenu() {
-            const navLinks = document.getElementById('navLinks');
-            const hamburger = document.querySelector('.hamburger');
-            navLinks.classList.toggle('active');
-            hamburger.classList.toggle('active');
-        }
-
-        // --- Scroll Animation Observer ---
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.15
-        };
-
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.fade-in').forEach((el) => {
-            observer.observe(el);
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
         });
 
-        // --- Advanced Organic p5.js WebGL Shader ---
-        // This shader creates a highly fluid, fabric-like organic animation 
-        // mimicking folded green aprons and liquid gold.
-        
+        interactives.forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+        });
+
+        // --- 2. Navbar Scroll Effect ---
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // --- 3. Intersection Observer (Scroll Reveals) ---
+        const revealElements = document.querySelectorAll('.scroll-reveal');
+        const revealOptions = {
+            threshold: 0.2,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target); // Run once
+            });
+        }, revealOptions);
+
+        revealElements.forEach(el => revealOnScroll.observe(el));
+
+        // --- 4. Smooth Parallax on Images ---
+        const parallaxImages = document.querySelectorAll('.parallax');
+        window.addEventListener('scroll', () => {
+            let scrollY = window.scrollY;
+            parallaxImages.forEach(img => {
+                let speed = 0.05;
+                // Calculate position relative to viewport to make parallax smoother
+                let rect = img.getBoundingClientRect();
+                if(rect.top < window.innerHeight && rect.bottom > 0) {
+                    img.style.transform = `translateY(${(rect.top - window.innerHeight/2) * speed}px)`;
+                }
+            });
+        });
+
+        // --- 5. Advanced p5.js WebGL Shader (Organic Flow) ---
         const vertexShader = `
             attribute vec3 aPosition;
             attribute vec2 aTexCoord;
@@ -576,12 +571,10 @@
             uniform float u_time;
             uniform vec2 u_mouse;
 
-            // Colors based on 'Harmony' Palette
-            vec3 darkGreen = vec3(0.08, 0.18, 0.11); // Deepest fold shadow
-            vec3 primaryGreen = vec3(0.106, 0.220, 0.141); // #1b3824
-            vec3 goldColor = vec3(0.831, 0.686, 0.216);  // #d4af37
+            vec3 darkGreen = vec3(0.06, 0.11, 0.08); 
+            vec3 primaryGreen = vec3(0.106, 0.220, 0.141); 
+            vec3 goldColor = vec3(0.831, 0.686, 0.216);  
             
-            // Fractal Brownian Motion for highly organic fabric-like folds
             mat2 rot(float a) {
                 float s = sin(a), c = cos(a);
                 return mat2(c, -s, s, c);
@@ -595,7 +588,7 @@
             float fbm(vec2 p) {
                 float value = 0.0;
                 float amplitude = 0.5;
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < 5; i++) {
                     value += amplitude * noise(p);
                     p *= rot(0.5);
                     p *= 2.0;
@@ -605,37 +598,34 @@
             }
 
             void main() {
-                // Normalize coordinates
                 vec2 st = gl_FragCoord.xy / u_resolution.xy;
                 st.x *= u_resolution.x / u_resolution.y;
 
-                // Interactive mouse influence (distorts the fabric)
                 vec2 mousePos = u_mouse / u_resolution;
                 mousePos.x *= u_resolution.x / u_resolution.y;
                 float mouseDist = length(st - mousePos);
-                vec2 distortion = (st - mousePos) * exp(-mouseDist * 3.0) * 0.2;
+                
+                // Mouse distortion creates a "ripple" in the fabric
+                vec2 distortion = (st - mousePos) * exp(-mouseDist * 2.0) * 0.3;
                 st += distortion;
 
-                // Organic coordinate warping (creating folds)
                 vec2 q = vec2(0.);
-                q.x = fbm(st + vec2(u_time * 0.1, u_time * 0.15));
-                q.y = fbm(st + vec2(u_time * 0.12, u_time * 0.08));
+                q.x = fbm(st + vec2(u_time * 0.05, u_time * 0.08));
+                q.y = fbm(st + vec2(u_time * 0.06, u_time * 0.04));
 
                 vec2 r = vec2(0.);
-                r.x = fbm(st + 1.0 * q + vec2(1.7, 9.2) + u_time * 0.15);
-                r.y = fbm(st + 1.0 * q + vec2(8.3, 2.8) + u_time * 0.126);
+                r.x = fbm(st + 1.0 * q + vec2(1.7, 9.2) + u_time * 0.07);
+                r.y = fbm(st + 1.0 * q + vec2(8.3, 2.8) + u_time * 0.06);
 
                 float f = fbm(st + r);
 
-                // Map noise values to our color palette
-                vec3 color = mix(darkGreen, primaryGreen, clamp((f * f) * 4.0, 0.0, 1.0));
+                vec3 color = mix(darkGreen, primaryGreen, clamp((f * f) * 3.0, 0.0, 1.0));
                 
-                // Add shimmering gold highlights on the crests of the folds
-                float goldHighlight = smoothstep(0.4, 0.8, f * noise(q * 3.0));
-                color = mix(color, goldColor, goldHighlight * 0.7);
+                // Intricate gold marbling
+                float goldHighlight = smoothstep(0.5, 0.9, f * noise(q * 4.0));
+                color = mix(color, goldColor, goldHighlight * 0.6);
 
-                // Add mouse glow
-                float glow = exp(-mouseDist * 4.0) * 0.3;
+                float glow = exp(-mouseDist * 3.0) * 0.25;
                 color += goldColor * glow;
 
                 gl_FragColor = vec4(color, 1.0);
@@ -645,32 +635,27 @@
         let theShader;
 
         function setup() {
-            let container = document.getElementById('p5-container');
-            let canvas = createCanvas(container.offsetWidth, container.offsetHeight, WEBGL);
+            let canvas = createCanvas(windowWidth, windowHeight, WEBGL);
             canvas.parent('p5-container');
-            
             theShader = createShader(vertexShader, fragmentShader);
             noStroke();
         }
 
         function draw() {
             shader(theShader);
-            
             theShader.setUniform("u_resolution", [width, height]);
             theShader.setUniform("u_time", millis() / 1000.0);
             
-            // Ease mouse coordinates to make the fluid interaction feel heavier/luxurious
-            let targetMouseX = constrain(mouseX, 0, width);
-            let targetMouseY = constrain(mouseY, 0, height);
-            
-            theShader.setUniform("u_mouse", [targetMouseX, targetMouseY]);
+            // Smooth mouse tracking for the shader
+            let targetX = constrain(mouseX, 0, width);
+            let targetY = constrain(mouseY, 0, height);
+            theShader.setUniform("u_mouse", [targetX, targetY]);
 
             rect(0, 0, width, height);
         }
 
         function windowResized() {
-            let container = document.getElementById('p5-container');
-            resizeCanvas(container.offsetWidth, container.offsetHeight);
+            resizeCanvas(windowWidth, windowHeight);
         }
     </script>
 </body>
