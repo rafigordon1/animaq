@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIMA Q | Contemporary Italian Kitchen</title>
+    <!-- Google Fonts inspired by 'Harmony' elegant typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- p5.js Library for WebGL Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    
+    <style>
+        /* CSS Variables based on Harmony image */
+        :root {
+            --primary-green: #1b3824; 
+            --accent-gold: #d4af37;
+            --bg-white: #fdfcf9;
+            --text-dark: #2c2c2c;
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Montserrat', sans-serif;
+        }
+
+        /* Base Styles & Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-white);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-heading);
+            font-weight: 400;
+        }
+
+        /* Navigation & Hamburger Menu */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(253, 252, 249, 0.9);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            letter-spacing: 2px;
+            color: var(--primary-green);
+            text-decoration: none;
+        }
+
+        .glowing-q {
+            color: var(--accent-gold);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 
+                         0 0 20px rgba(212, 175, 55, 0.4), 
+                         0 0 30px rgba(212, 175, 55, 0.2);
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { text-shadow: 0 0 5px rgba(212, 175, 55, 0.5); }
+            100% { text-shadow: 0 0 15px rgba(212, 175, 55, 0.9), 0 0 25px rgba(212, 175, 55, 0.6); }
+        }
+
+        .hamburger {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 30px;
+            height: 2px;
+            background-color: var(--primary-green);
+            transition: 0.3s;
+        }
+
+        .nav-links {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--primary-green);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            transition: 0.5s ease;
+            z-index: 999;
+        }
+
+        .nav-links.active {
+            right: 0;
+        }
+
+        .nav-links a {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--bg-white);
+        }
+
+        .hamburger.active span:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); background-color: var(--accent-gold); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); background-color: var(--accent-gold); }
+
+        /* Sections */
+        section {
+            min-height: 100vh;
+            padding: 100px 5vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Hero Video Section */
+        #hero {
+            position: relative;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            object-fit: cover;
+            z-index: -1;
+            filter: brightness(0.6);
+        }
+
+        .hero-content {
+            text-align: center;
+            color: var(--bg-white);
+            z-index: 1;
+        }
+
+        .hero-content h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            letter-spacing: 5px;
+        }
+
+        /* WebGL Art Section */
+        #art-section {
+            position: relative;
+            padding: 0;
+            background-color: var(--primary-green);
+            overflow: hidden;
+        }
+        
+        #p5-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .art-overlay {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: var(--bg-white);
+            pointer-events: none;
+        }
+        
+        .art-overlay h2 {
+            font-size: 3rem;
+            color: var(--accent-gold);
+        }
+
+        /* Content Sections (Menu, Booking, About, Contact) */
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary-green);
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 2px;
+            background: var(--accent-gold);
+            margin: 15px auto 0;
+        }
+
+        /* Menu Grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .menu-item {
+            text-align: center;
+            padding: 2rem;
+            border: 1px solid rgba(27, 56, 36, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-gold);
+        }
+
+        .menu-item img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            filter: grayscale(20%);
+            transition: 0.3s ease;
+        }
+        
+        .menu-item:hover img {
+            filter: grayscale(0%);
+        }
+
+        /* Forms */
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-bottom: 1px solid var(--primary-green);
+            background: transparent;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-bottom: 1px solid var(--accent-gold);
+        }
+
+        button {
+            padding: 15px 30px;
+            background-color: var(--primary-green);
+            color: var(--bg-white);
+            border: none;
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--accent-gold);
+            color: var(--primary-green);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary-green);
+            color: var(--bg-white);
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        
+        .footer-logo {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav { padding: 15px 20px; }
+            .hero-content h1 { font-size: 2.5rem; }
+            .art-overlay h2 { font-size: 2rem; }
+        }
+
+        /* Scroll Animation Classes */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="logo">ANIMA <span class="glowing-q">Q</span></a>
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="#hero" onclick="toggleMenu()">Home</a>
+            <a href="#menu" onclick="toggleMenu()">Menu</a>
+            <a href="#art-section" onclick="toggleMenu()">The Art</a>
+            <a href="#booking" onclick="toggleMenu()">Booking</a>
+            <a href="#about" onclick="toggleMenu()">About</a>
+            <a href="#contact" onclick="toggleMenu()">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Video Section -->
+    <section id="hero">
+        <!-- Placeholder video representing the Italian aesthetic -->
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="https://cdn.pixabay.com/video/2020/05/24/40097-425091763_large.mp4" type="video/mp4">
+        </video>
+        <div class="hero-content fade-in">
+            <h1>Contemporary Italian</h1>
+            <p>A minimalist approach to traditional flavors.</p>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section id="menu">
+        <h2 class="section-title fade-in">Curated Menu</h2>
+        <div class="menu-grid">
+            <div class="menu-item fade-in">
+                <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&q=80&w=800" alt="Antipasti">
+                <h3>Antipasti</h3>
+                <p>Locally sourced, minimalist starters.</p>
+            </div>
+            <div class="menu-item fade-in">
+                <img src="https://images.unsplash.com/photo-1621996311239-531f0b503e5b?auto=format&fit=crop&q=80&w=800" alt="Primi">
+                <h3>Primi Piatti</h3>
+                <p>Handmade pasta, refined sauces.</p>
+            </div>
+            <div class="menu-item fade-in">
+                <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800" alt="Dolci">
+                <h3>Dolci</h3>
+                <p>Elegant, contemporary desserts.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive WebGL Art Section based on Drawings -->
+    <section id="art-section">
+        <div id="p5-container"></div>
+        <div class="art-overlay fade-in">
+            <h2>The Fabric of ANIMA Q</h2>
+            <p style="font-style: italic; max-width: 600px; margin: 10px auto;">An interactive WebGL interpretation of our uniform drapery and artistic origins.</p>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="booking">
+        <h2 class="section-title fade-in">Reserve a Table</h2>
+        <form class="fade-in">
+            <input type="text" placeholder="Full Name" required>
+            <input type="email" placeholder="Email Address" required>
+            <div style="display: flex; gap: 1rem;">
+                <input type="date" required style="flex: 1;">
+                <input type="time" required style="flex: 1;">
+            </div>
+            <select required>
+                <option value="" disabled selected>Number of Guests</option>
+                <option value="1">1 Person</option>
+                <option value="2">2 People</option>
+                <option value="3">3 People</option>
+                <option value="4">4 People</option>
+                <option value="5+">5+ People (Contact Us)</option>
+            </select>
+            <button type="submit">Confirm Booking</button>
+        </form>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" style="background-color: rgba(27, 56, 36, 0.03);">
+        <div style="max-width: 800px; margin: 0 auto; text-align: center;" class="fade-in">
+            <h2 class="section-title">About Us</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">
+                ANIMA Q strips away the excess to reveal the soul of Italian cuisine. Born from a series of conceptual sketches and a dedication to the 'Harmony' of ingredients, we fuse art, design, and culinary mastery.
+            </p>
+            <p style="font-size: 1.1rem;">
+                Our green and gold aesthetic reflects our commitment to natural, premium produce and the glowing standard of our hospitality.
+            </p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2 class="section-title fade-in">Contact</h2>
+        <div style="text-align: center; max-width: 600px; margin: 0 auto;" class="fade-in">
+            <p>123 Culinary Lane, Melbourne, VIC 3000</p>
+            <p style="margin: 1rem 0;">ciao@animaq.com.au</p>
+            <p>+61 3 9000 0000</p>
+            <br>
+            <p style="font-family: var(--font-heading); color: var(--accent-gold); font-size: 1.5rem;">Follow the Q.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="logo footer-logo" style="color: var(--accent-gold);">ANIMA <span style="color: var(--bg-white);">Q</span></div>
+        <p>&copy; 2026 ANIMA Q. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Hamburger Menu Logic
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const hamburger = document.querySelector('.hamburger');
+            navLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
+
+        // Scroll Animation Observer (Pulse Principle: Clean fade ins)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach((el) => {
+            observer.observe(el);
+        });
+
+        // --- p5.js WebGL Shader Integration ---
+        // This shader creates a fluid, minimalist interpretation of the drawn aprons/figures
+        
+        const vertexShader = `
+            attribute vec3 aPosition;
+            attribute vec2 aTexCoord;
+            varying vec2 vTexCoord;
+            void main() {
+                vTexCoord = aTexCoord;
+                vec4 positionVec4 = vec4(aPosition, 1.0);
+                positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+                gl_Position = positionVec4;
+            }
+        `;
+
+        const fragmentShader = `
+            precision mediump float;
+            uniform vec2 u_resolution;
+            uniform float u_time;
+            uniform vec2 u_mouse;
+
+            // Harmony Palette Colors
+            vec3 greenColor = vec3(0.106, 0.220, 0.141); // #1b3824
+            vec3 goldColor = vec3(0.831, 0.686, 0.216);  // #d4af37
+            
+            // Simplex-ish noise function for organic shapes (like fabric/apron folds)
+            float noise(vec2 p) {
+                return sin(p.x * 2.5 + u_time * 0.5) * cos(p.y * 2.5 + u_time * 0.4);
+            }
+
+            void main() {
+                vec2 st = gl_FragCoord.xy / u_resolution.xy;
+                st.x *= u_resolution.x / u_resolution.y;
+
+                // Interactive movement based on mouse
+                vec2 mousePos = u_mouse / u_resolution;
+                st += (mousePos * 0.1);
+
+                // Create fluid, curving lines reminiscent of the drawings
+                vec2 q = vec2(0.0);
+                q.x = st.x + 0.5 * sin(u_time * 0.2);
+                q.y = st.y + 0.5 * cos(u_time * 0.3);
+
+                float f = noise(q) + noise(q * 2.0) * 0.5;
+                f = smoothstep(-0.5, 0.5, f);
+
+                // Blend the dark green and gold smoothly
+                vec3 color = mix(greenColor, goldColor, f * 0.4); // Keep gold subtle and elegant
+
+                // Add a glowing core effect
+                float glow = exp(-length(st - vec2(0.5 * (u_resolution.x/u_resolution.y), 0.5)) * 2.0);
+                color += goldColor * glow * 0.3;
+
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        let theShader;
+
+        function setup() {
+            let container = document.getElementById('p5-container');
+            let canvas = createCanvas(container.offsetWidth, container.offsetHeight, WEBGL);
+            canvas.parent('p5-container');
+            
+            theShader = createShader(vertexShader, fragmentShader);
+            noStroke();
+        }
+
+        function draw() {
+            shader(theShader);
+            
+            theShader.setUniform("u_resolution", [width, height]);
+            theShader.setUniform("u_time", millis() / 1000.0);
+            theShader.setUniform("u_mouse", [mouseX, mouseY]);
+
+            // Draw a rect that covers the whole webgl canvas
+            rect(0, 0, width, height);
+        }
+
+        function windowResized() {
+            let container = document.getElementById('p5-container');
+            resizeCanvas(container.offsetWidth, container.offsetHeight);
+        }
+    </script>
+</body>
+</html>
